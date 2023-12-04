@@ -9,6 +9,7 @@ import os
 from ProducerConsumer import Storage
 
 storage = Storage()
+storageGray = Storage()
 
 class extract():
     def __init__(self):
@@ -25,34 +26,35 @@ class extract():
             suc, jpgImage = cv2.imencode('.jpg', image)
             #encode the frame as base 64 to make debugging easier
             # jpgAsText = base64.b64encode(jpgImage)
-            storage.emptyAcquire()
-            storage.lockAcquire()
-            # Add frame to the queue
-            print('Inserting frame')
-            storage.addToQueue(image)
-            storage.lockRelease()
-            storage.fullRelease()
-            
+            storageGray.insert(image)
+
+class gray():
+    def __init__(self):
+        self.togray()
+    
+    def togray(self):
+        while True:
+           colorFrame = storageGray.remove()
+           grayFrame = cv2.cvtColor(colorFrame, cv2.COLOR_BGR2GRAY)
+           storage.insert(grayFrame)
+
 class display():
     def __init__(self):
         self.display()
     
     def display(self):
         while True:
-            storage.fullAcquire()
-            storage.lockAcquire()
-            frame = storage.dequeue()
-            print("Displaying frame")
+            frame = storage.remove()
             cv2.imshow('Video', frame)
             key = cv2.waitKey(35)
             if(key == ord("q")):
                 cv2.destroyAllWindows()
                 exit()
-            storage.lockRelease()
-            storage.emptyRelease()
 
 threadE = threading.Thread(target=extract)
+threadG = threading.Thread(target=gray)
 threadD = threading.Thread(target=display)
 
 threadE.start()
+threadG.start()
 threadD.start()

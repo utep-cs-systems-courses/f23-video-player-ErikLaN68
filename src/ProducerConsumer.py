@@ -9,6 +9,22 @@ class Storage:
         self.empty = Semaphore(30)
         self.lock = Lock()
     
+    def insert(self,frame):
+        self.emptyAcquire()
+        self.lockAcquire()
+        # Add frame to the queue
+        self.addToQueue(frame)
+        self.lockRelease()
+        self.fullRelease()
+        
+    def remove(self):
+        self.fullAcquire()
+        self.lockAcquire()
+        frame = self.dequeue()
+        self.lockRelease()
+        self.emptyRelease()
+        return frame
+        
     def addToQueue(self, item):
         self.queue.append(item)
     
