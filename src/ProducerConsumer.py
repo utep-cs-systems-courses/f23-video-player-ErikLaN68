@@ -6,15 +6,15 @@ class Storage:
         print('Setting up Storage')
         self.queue = []
         self.full = Semaphore(0)
-        self.empty = Semaphore(15)
+        self.empty = Semaphore(30)
         self.lock = Lock()
     
     def addToQueue(self, item):
         self.queue.append(item)
     
-    def dequeue(self, item):
-        head, *tail = self.queue
-        self.queue = tail
+    def dequeue(self):
+        head = self.queue[0]
+        self.queue = self.queue[1:]
         return head
     
     def fullAcquire(self):

@@ -11,53 +11,52 @@ from ProducerConsumer import Storage
 
 storage = Storage()
 
-class extract(threading.Thread):
+class extract():
     def __init__(self):
-        threading.Thread.__init__(self)
+        #threading.Thread.__init__(self)
         clipFileName = 'clip.mp4'
         self.vidcap = cv2.VideoCapture(clipFileName)
         self.insert()
         
     def insert(self):
         print('in insert')
-        success,image = self.vidcap.read()
         while True:
+            suc, image = self.vidcap.read()
             # get a jpg encoded frame
-            success, jpgImage = cv2.imencode('.jpg', image)
-
+            if image is None:
+                exit()
+            suc, jpgImage = cv2.imencode('.jpg', image)
             #encode the frame as base 64 to make debugging easier
             # jpgAsText = base64.b64encode(jpgImage)
-            print('Before sema empty')
             storage.emptyAcquire()
             print('after sema empty')
             storage.lockAcquire()
             # add the frame to the buffer
             storage.addToQueue(jpgImage)
+            print('Image stored')
             storage.lockRelease()
             storage.fullRelease()
-        
-            success,image = self.vidcap.read()
             
-class display(threading.Thread):
+class display():
     def __init__(self):
-        threading.Thread.__init__(self)
+        #threading.Thread.__init__(self)
+        print('setting up display')
         self.display()
     
-    def display():
+    def display(self):
         print('in display')
         while True:
             storage.fullAcquire()
+            print('Past sema in display')
             storage.lockAcquire()
-            frame = storage.dequeue
+            frame = storage.dequeue()
             cv2.imshow('Video', frame)
-            if cv2.waitKey(42) and 0xFF == ord("q"):
-                break
             storage.lockRelease()
             storage.emptyRelease()
             time.sleep(1/30)
 
-threadE = extract()
-threadD = display()
+threadE = threading.Thread(target=extract)
+threadD = threading.Thread(target=display)
 
 threadE.start()
 threadD.start()
