@@ -20,7 +20,6 @@ def extractFrames(fileName, outputBuffer, maxFramesToLoad=9999):
     while success and count < maxFramesToLoad:
         # get a jpg encoded frame
         success, jpgImage = cv2.imencode('.jpg', image)
-
         #encode the frame as base 64 to make debugging easier
         jpgAsText = base64.b64encode(jpgImage)
 
